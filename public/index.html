@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script>/* Relative paths need a trailing slash: /<secret> -> /<secret>/ */
+    if (!location.pathname.endsWith('/') && !/\.html$/.test(location.pathname)) location.replace(location.pathname + '/' + location.search + location.hash);</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#f6f5f2">
+  <title>Flats</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#/">Flats</a>
+    <button id="refresh" class="refresh" type="button" aria-label="Refresh data" title="Refresh data">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
+    </button>
+  </header>
+  <main id="app" aria-live="polite"><p class="message">Loading…</p></main>
+  <div id="lightbox" class="lightbox" hidden></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

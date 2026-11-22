@@ -1,0 +1,11 @@
+{
+  "name": "flatscout",
+  "private": true,
+  "type": "module",
+  "description": "Read-only, phone-first flat tracker that reads a Google Sheet.",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "build": "node scripts/build.mjs"
+  },
+  "engines": { "node": ">=18" }
+}
