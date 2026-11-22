@@ -90,6 +90,13 @@ function num(s) {
   return Number.isFinite(n) ? n : null;
 }
 
+// Plain number display, e.g. "3." or "3.50" from a formatted sheet cell -> "3" / "3.5".
+function plainNum(s) {
+  const t = String(s ?? '').trim();
+  const m = t.match(/^(\d+)(?:[.,](\d*))?$/);
+  return m ? String(Number(`${m[1]}.${m[2] || '0'}`)) : t;
+}
+
 function chf(n) {
   const whole = Number.isInteger(n);
   return 'CHF ' + n.toLocaleString('en-US', { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: 2 });
@@ -322,8 +329,8 @@ function flatCard(f) {
   const rent = rentLines(f);
   const start = parseDT(f.start_date);
   const facts = [
-    f.rooms && `${esc(f.rooms)} rooms`,
-    f.m2 && `${esc(f.m2)} m²`,
+    f.rooms && `${esc(plainNum(f.rooms))} rooms`,
+    f.m2 && `${esc(plainNum(f.m2))} m²`,
     rent.gross && esc(rent.gross),
   ].filter(Boolean);
   return `
@@ -522,8 +529,8 @@ function renderFlat(f) {
     ['Status', badge(FLAT_STATUS, f.status)],
     ['Closed reason', isClosed(f) ? esc(f.closed_reason) : ''],
     ['Area', esc(f.area)],
-    ['Rooms', esc(f.rooms)],
-    ['Size', f.m2 ? `${esc(f.m2)} m²` : ''],
+    ['Rooms', f.rooms ? esc(plainNum(f.rooms)) : ''],
+    ['Size', f.m2 ? `${esc(plainNum(f.m2))} m²` : ''],
     ['Rent', rent.gross ? `${esc(rent.gross)}${rent.split ? `<div class="sub">${esc(rent.split)}</div>` : ''}` : (rent.split ? esc(rent.split) : '')],
     ['Floor', esc(f.floor)],
     ['Available from', start ? esc(fmtDate(start)) : esc(f.start_date)],
