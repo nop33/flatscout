@@ -92,8 +92,9 @@ function num(s) {
 
 // Plain number display, e.g. "3." or "3.50" from a formatted sheet cell -> "3" / "3.5".
 function plainNum(s) {
-  const n = num(s);
-  return n != null ? String(n) : String(s ?? '');
+  const t = String(s ?? '').trim();
+  const m = t.match(/^(\d+)(?:[.,](\d*))?$/);
+  return m ? String(Number(`${m[1]}.${m[2] || '0'}`)) : t;
 }
 
 function chf(n) {
