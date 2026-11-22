@@ -1,10 +1,8 @@
 // Proxies one tab of the Google Sheet as CSV so the sheet URL never reaches
 // the repo or the browser. Sheet URLs live in Netlify environment variables.
 //
-//   GET /<SITE_PATH>/api/flats           -> FLATS_CSV_URL
-//   GET /<SITE_PATH>/api/interest-lists  -> INTEREST_LISTS_CSV_URL
-//
-// When SITE_PATH is empty the API is served at /api/<tab> instead.
+//   GET /api/flats           -> FLATS_CSV_URL
+//   GET /api/interest-lists  -> INTEREST_LISTS_CSV_URL
 
 const TABS = {
   'flats': 'FLATS_CSV_URL',
@@ -24,9 +22,6 @@ const reply = (status, body, type = 'text/plain; charset=utf-8') => new Response
 });
 
 export default async (req, context) => {
-  const secret = context.params?.secret ?? '';
-  if (secret !== env('SITE_PATH')) return reply(404, 'Not found');
-
   const varName = TABS[context.params?.tab];
   if (!varName) return reply(404, 'Not found');
 
@@ -49,5 +44,5 @@ export default async (req, context) => {
 };
 
 export const config = {
-  path: ['/api/:tab', '/:secret/api/:tab'],
+  path: '/api/:tab',
 };

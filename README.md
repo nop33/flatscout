@@ -4,7 +4,7 @@ A read-only, phone-first website that shows every flat we are looking at as simp
 
 - Plain HTML, CSS and JavaScript in `public/`. No framework, no dependencies.
 - A small Netlify Function (`netlify/functions/sheet.mjs`) proxies the sheet as CSV.
-- The site is only reachable under a secret path, and every page says `noindex, nofollow`.
+- Every page says `noindex, nofollow`, and the URL is not shared publicly or submitted to search engines.
 
 ## How the site reads the sheet
 
@@ -22,29 +22,22 @@ These steps are not automated. Nothing here creates the Google Sheet, the Drive 
    Tip: select all columns and choose *Format > Number > Plain text*, so dates such as `2026-11-27 18:00` stay exactly as typed and are not reformatted by Sheets.
 2. **Publish each tab as CSV**: *File > Share > Publish to web*, pick the tab, pick *Comma-separated values (.csv)*, publish. Do this once per tab and copy both URLs (they look like `https://docs.google.com/spreadsheets/d/e/2PACX-…/pub?gid=…&single=true&output=csv`).
    Keep the sheet itself shared only with the people who edit it. Do not put it in a public Drive folder.
-3. **Connect the repo to Netlify** (the build settings come from `netlify.toml`, nothing to fill in).
-4. **Pick an unguessable site name** in Netlify (*Site configuration > Change site name*), e.g. a random string rather than anything that says "flat".
-5. **Set the environment variables** in Netlify (*Site configuration > Environment variables*), with scopes *Builds* and *Functions* (or *All scopes*):
+3. **Connect the repo to Netlify** (the settings come from `netlify.toml`, nothing to fill in; there is no build step).
+4. **Set the environment variables** in Netlify (*Site configuration > Environment variables*), scope *Functions* (or *All scopes*):
 
    | Variable | Value |
    | --- | --- |
-   | `SITE_PATH` | A long random secret, letters/digits/`-`/`_` only, at least 24 characters. Generate one with `openssl rand -hex 16` or `node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"`. |
    | `FLATS_CSV_URL` | Published CSV URL of the `Flats` tab. |
    | `INTEREST_LISTS_CSV_URL` | Published CSV URL of the `Interest lists` tab. |
 
-6. **Redeploy** (*Deploys > Trigger deploy*) so the build picks up `SITE_PATH`.
-7. Open `https://<site-name>.netlify.app/<SITE_PATH>/` and bookmark it on both phones. That is the only URL to share. Do not submit it to search engines.
-
-The root URL `https://<site-name>.netlify.app/` only serves a "Not found" page and `robots.txt`. The API also answers only under `/<SITE_PATH>/api/…`.
-
-To rotate the secret path, change `SITE_PATH` and redeploy; the old URL stops working.
+5. **Redeploy** (*Deploys > Trigger deploy*), then open `https://<site-name>.netlify.app/` and bookmark it. Do not submit it to search engines.
 
 ## Not indexable
 
 - `<meta name="robots" content="noindex, nofollow">` on the page.
 - `robots.txt` disallows all crawlers.
 - `X-Robots-Tag: noindex, nofollow` header on every response (`netlify.toml`, and on the function responses).
-- `Referrer-Policy: no-referrer`, so the secret URL is not leaked to listing sites, Google Maps or Drive when a link or photo is opened.
+- `Referrer-Policy: no-referrer`, so the site URL is not leaked to listing sites, Google Maps or Drive when a link or photo is opened.
 
 ## Sheet schema
 
@@ -85,10 +78,10 @@ npm run dev
 
 Opens a preview on http://localhost:8080/ that answers `api/flats` and `api/interest-lists` from the fake rows in `public/fixtures/`. No real sheet or real address is needed.
 
-On a deployed site, add `?fixtures` to the URL (e.g. `https://<site>/<SITE_PATH>/?fixtures`) to view the same fake rows instead of the sheet, which is handy before the sheet exists.
+On a deployed site, add `?fixtures` to the URL (e.g. `https://<site>/?fixtures`) to view the same fake rows instead of the sheet, which is handy before the sheet exists.
 
 The fixture rows are fake examples. Do not copy them into the real sheet.
 
 ## Privacy
 
-Never commit or put into the sheet, Drive folder names or the site: personal phone numbers, IBANs or other payment details, or ID, passport or permit numbers. Flat addresses and agent contacts are expected, which is why the URL must stay secret. The sheet URLs and `SITE_PATH` live only in Netlify environment variables.
+Never commit or put into the sheet, Drive folder names or the site: personal phone numbers, IBANs or other payment details, or ID, passport or permit numbers. Flat addresses and agent contacts are expected, which is why the site URL should not be shared publicly. The sheet URLs live only in Netlify environment variables.
