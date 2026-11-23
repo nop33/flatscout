@@ -6,10 +6,10 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const FLAT_STATUS = {
-  'inquired': 'Inquired',
+  'requested viewing': 'Requested viewing',
   'viewing booked': 'Viewing booked',
+  'viewed': 'Viewed',
   'applied': 'Applied',
-  'waiting': 'Waiting',
   'interest list': 'Interest list',
   'closed': 'Closed',
 };

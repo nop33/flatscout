@@ -115,13 +115,15 @@ main { max-width: 760px; margin: 0 auto; padding: 16px; }
 }
 .s-viewing-booked, .s-renewal-due { background: #fde9c8; color: #6b4300; }
 .s-applied { background: #d8ecdc; color: #1f5a2c; }
-.s-inquired, .s-registered { background: #dde8f3; color: #1f4466; }
+.s-requested-viewing, .s-registered { background: #dde8f3; color: #1f4466; }
+.s-viewed { background: #d4eeec; color: #0f5550; }
 .s-waiting, .s-interest-list { background: #ece3f4; color: #4b2a66; }
 .s-closed { background: var(--placeholder); color: var(--muted); }
 @media (prefers-color-scheme: dark) {
   .s-viewing-booked, .s-renewal-due { background: #4a3510; color: #fbd99a; }
   .s-applied { background: #1d3a24; color: #a9dcb4; }
-  .s-inquired, .s-registered { background: #1c3047; color: #a9cbeb; }
+  .s-requested-viewing, .s-registered { background: #1c3047; color: #a9cbeb; }
+  .s-viewed { background: #133b38; color: #9fdcd6; }
   .s-waiting, .s-interest-list { background: #33233f; color: #d5bdea; }
 }
 

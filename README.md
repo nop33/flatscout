@@ -67,7 +67,8 @@ Row 1 is the header. Empty rows are skipped. Headers are matched exactly (case-i
 id,status,closed_reason,address,area,map_link,rooms,m2,gross_rent,net_rent,nebenkosten,floor,start_date,listing_links,source,agent_name,agent_contact,date_contacted,last_reply,next_step,viewing_datetime,doorbell,photo_links,pros,cons,notes,last_updated
 ```
 
-- `status`: `inquired`, `viewing booked`, `applied`, `waiting`, `interest list`, `closed`.
+- `status`: `requested viewing`, `viewing booked`, `viewed`, `applied`, `interest list`, `closed`.
+- `closed_reason`: `we declined`, `no reply`, `skipped`, `scam`, `listing gone`, `rented to someone else`.
 - Dates are `YYYY-MM-DD`, date-times are `YYYY-MM-DD HH:MM`, all in Europe/Zurich local time.
 - Rents are numbers only (no `CHF`).
 - `listing_links` and `photo_links` hold several URLs separated by a newline or `|`. The first photo is the card thumbnail.
