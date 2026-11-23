@@ -281,10 +281,11 @@ function sortByStatusDate(flats) {
   });
 }
 
-// Active flats in one section per status, in the order of FLAT_STATUS.
+// Active flats in one section per status, booked viewings first.
 // Unknown statuses go into one last "Other" section.
+const GROUP_ORDER = ['viewing booked', 'requested viewing', 'viewed', 'applied', 'interest list'];
 function groupActive(flats) {
-  const order = Object.keys(FLAT_STATUS).filter((s) => s !== 'closed');
+  const order = GROUP_ORDER;
   const groups = new Map(order.map((s) => [s, []]));
   const other = [];
   for (const f of flats) (groups.get(f.status.toLowerCase()) ?? other).push(f);
