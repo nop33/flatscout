@@ -181,6 +181,7 @@ document.addEventListener('error', (e) => {
   const img = e.target;
   if (!(img instanceof HTMLImageElement) || !img.dataset.candidates) return;
   const c = JSON.parse(img.dataset.candidates);
+  forgetPhoto(c[+img.dataset.try]);
   const next = +img.dataset.try + 1;
   if (next < c.length) {
     img.dataset.try = String(next);
@@ -192,6 +193,13 @@ document.addEventListener('error', (e) => {
   img.remove();
   if (holder) photoFailed(holder);
 }, true);
+
+// The service worker keeps photos on the phone. A URL that failed to load
+// must not stay cached, or it would fail the same way every time.
+function forgetPhoto(url) {
+  if (!url || !('caches' in window)) return;
+  caches.open('flats-photos-v1').then((c) => c.delete(url)).catch(() => {});
+}
 
 function photoFailed(holder) {
   if (holder.matches('.card-photo')) { holder.classList.add('empty'); return; }

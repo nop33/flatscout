@@ -32,6 +32,19 @@ These steps are not automated. Nothing here creates the Google Sheet, the Drive 
 
 5. **Redeploy** (*Deploys > Trigger deploy*), then open `https://<site-name>.netlify.app/` and bookmark it. Do not submit it to search engines.
 
+## Add to home screen
+
+The site is an installable web app (`manifest.webmanifest`, icons in `public/icons/`, service worker `sw.js`).
+
+- **iPhone (Safari):** Share > *Add to Home Screen*.
+- **Android (Chrome):** menu > *Add to Home screen* / *Install app*.
+
+It opens full screen with its own icon. The service worker keeps:
+
+- **The app itself** (HTML, CSS, JS, icons), network first, so it still opens without a connection and a new deploy shows on the next load.
+- **Photos**, cache first: each photo is downloaded from Google Drive once and then served from the phone. The last 300 photos are kept. A photo that fails to load is dropped from the cache.
+- **Not the sheet data.** `api/…` is never cached, so the cards are always current.
+
 ## Not indexable
 
 - `<meta name="robots" content="noindex, nofollow">` on the page.
