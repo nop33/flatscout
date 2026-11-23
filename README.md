@@ -68,6 +68,12 @@ id,status,closed_reason,address,area,map_link,rooms,m2,gross_rent,net_rent,neben
 ```
 
 - `status`: `requested viewing`, `viewing booked`, `viewed`, `applied`, `interest list`, `closed`.
+- On the homepage, active flats are grouped by status (in the order above). Each card shows a date next to the status badge, and each group is sorted by it:
+  - `requested viewing`: `date_contacted`, newest first.
+  - `viewing booked`: `viewing_datetime`, soonest first.
+  - `viewed`: `viewing_datetime`, newest first.
+  - `applied`, `interest list`, `closed`: `last_updated`, newest first.
+  Flats without that date go to the end of their group.
 - `closed_reason`: `we declined`, `no reply`, `skipped`, `scam`, `listing gone`, `rented to someone else`.
 - Dates are `YYYY-MM-DD`, date-times are `YYYY-MM-DD HH:MM`, all in Europe/Zurich local time.
 - Rents are numbers only (no `CHF`).

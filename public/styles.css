@@ -101,6 +101,9 @@ main { max-width: 760px; margin: 0 auto; padding: 16px; }
 .card-body { padding: 12px 14px 14px; color: inherit; text-decoration: none; flex: 1; display: flex; flex-direction: column; gap: 4px; }
 .card-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .area { font-size: 13px; color: var(--muted); }
+.status-date { font-size: 13px; font-weight: 600; }
+.group + .group { margin-top: 24px; }
+.group-title { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 0 0 10px; }
 .card-title { font-size: 17px; font-weight: 650; }
 .card-facts { margin: 0; font-weight: 500; }
 .card-meta { margin: 0; font-size: 14px; color: var(--muted); }
