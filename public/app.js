@@ -118,6 +118,15 @@ function fmtDate(p) {
   return `${WEEKDAYS[wd]} ${p.d} ${MONTHS[p.mo - 1]} ${p.y}`;
 }
 
+// Compact date for badges: "Thu 27 Nov, 18:00" (year only when not this year).
+function fmtShort(s) {
+  const p = parseDT(s);
+  if (!p) return '';
+  const wd = new Date(Date.UTC(p.y, p.mo - 1, p.d)).getUTCDay();
+  const year = String(p.y) === zurichNow().date.slice(0, 4) ? '' : ` ${p.y}`;
+  return `${WEEKDAYS[wd]} ${p.d} ${MONTHS[p.mo - 1]}${year}${p.time ? `, ${p.time}` : ''}`;
+}
+
 function fmtDT(s) {
   const p = parseDT(s);
   if (!p) return String(s ?? '');
@@ -249,27 +258,42 @@ async function load() {
 
 /* ---------- Sorting ---------- */
 
-function sortActive(flats) {
-  const today = zurichNow().date;
-  const group = (f) => {
-    const v = parseDT(f.viewing_datetime);
-    if (v && v.date >= today) return 0; // upcoming (or today's) viewing
-    if (!v) return 1;                   // no viewing
-    return 2;                           // past viewing, no new date
-  };
-  const desc = (a, b) => (a < b ? 1 : a > b ? -1 : 0);
+// The date shown next to each status badge, and used to sort within its group.
+// asc: soonest first (upcoming viewings); otherwise newest first.
+const STATUS_DATE = {
+  'requested viewing': { field: 'date_contacted', label: '' },
+  'viewing booked': { field: 'viewing_datetime', label: '', asc: true },
+  'viewed': { field: 'viewing_datetime', label: '' },
+  'applied': { field: 'last_updated', label: 'Updated' },
+  'interest list': { field: 'last_updated', label: 'Updated' },
+  'closed': { field: 'last_updated', label: '' },
+};
+const statusDate = (f) => STATUS_DATE[f.status.toLowerCase()] ?? { field: 'last_updated', label: 'Updated' };
+
+function sortByStatusDate(flats) {
   return [...flats].sort((a, b) => {
-    const ga = group(a), gb = group(b);
-    if (ga !== gb) return ga - gb;
-    if (ga === 0) return sortKey(a.viewing_datetime).localeCompare(sortKey(b.viewing_datetime));
-    return desc(sortKey(a.date_contacted), sortKey(b.date_contacted))
-      || desc(sortKey(a.last_updated), sortKey(b.last_updated));
+    const { field, asc } = statusDate(a);
+    const ka = sortKey(a[field]), kb = sortKey(b[field]);
+    if (ka === kb) return sortKey(b.last_updated).localeCompare(sortKey(a.last_updated));
+    if (!ka) return 1; // no date: end of the group
+    if (!kb) return -1;
+    return asc ? ka.localeCompare(kb) : kb.localeCompare(ka);
   });
 }
 
-function sortClosed(flats) {
-  return [...flats].sort((a, b) => sortKey(b.last_updated).localeCompare(sortKey(a.last_updated)));
+// Active flats in one section per status, in the order of FLAT_STATUS.
+// Unknown statuses go into one last "Other" section.
+function groupActive(flats) {
+  const order = Object.keys(FLAT_STATUS).filter((s) => s !== 'closed');
+  const groups = new Map(order.map((s) => [s, []]));
+  const other = [];
+  for (const f of flats) (groups.get(f.status.toLowerCase()) ?? other).push(f);
+  const out = order.map((s) => ({ title: FLAT_STATUS[s], flats: groups.get(s) }));
+  out.push({ title: 'Other', flats: other.sort((a, b) => sortKey(b.last_updated).localeCompare(sortKey(a.last_updated))) });
+  return out.filter((g) => g.flats.length).map((g) => ({ ...g, flats: g.title === 'Other' ? g.flats : sortByStatusDate(g.flats) }));
 }
+
+const sortClosed = sortByStatusDate;
 
 function sortLists(lists) {
   return [...lists].sort((a, b) => {
@@ -338,6 +362,12 @@ function renderNextUp() {
 
 /* ---------- Home ---------- */
 
+function statusWhen(f) {
+  const { field, label } = statusDate(f);
+  const when = fmtShort(f[field]);
+  return when ? `<span class="status-date">${esc(label ? `${label} ${when}` : when)}</span>` : '';
+}
+
 function flatCard(f) {
   const photos = splitLinks(f.photo_links);
   const href = `#/flat/${encodeURIComponent(f.id)}`;
@@ -352,7 +382,7 @@ function flatCard(f) {
     <article class="card">
       ${photos.length ? gallery(photos, href) : '<div class="card-photo empty"></div>'}
       <a class="card-body" href="${href}">
-        <div class="card-top">${badge(FLAT_STATUS, f.status)}${f.area ? `<span class="area">${esc(f.area)}</span>` : ''}</div>
+        <div class="card-top">${badge(FLAT_STATUS, f.status)}${statusWhen(f)}${f.area ? `<span class="area">${esc(f.area)}</span>` : ''}</div>
         <h3 class="card-title">${esc(f.address || f.id)}</h3>
         ${facts.length ? `<p class="card-facts">${facts.join('<span class="dot">·</span>')}</p>` : ''}
         ${start ? `<p class="card-meta">From ${esc(fmtDate(start))}</p>` : ''}
@@ -375,18 +405,23 @@ function listCard(l) {
 }
 
 function renderHome() {
-  const active = sortActive(state.flats.filter((f) => !isClosed(f)));
+  const groups = groupActive(state.flats.filter((f) => !isClosed(f)));
+  const activeCount = groups.reduce((n, g) => n + g.flats.length, 0);
   const closed = sortClosed(state.flats.filter(isClosed));
   const lists = sortLists(state.lists);
   const tabs = [
-    ['active', 'Active', active.length],
+    ['active', 'Active', activeCount],
     ['lists', 'Interest lists', lists.length],
     ['closed', 'Closed', closed.length],
   ];
   let body;
   if (state.tab === 'lists') body = lists.map(listCard).join('');
   else if (state.tab === 'closed') body = closed.map(flatCard).join('');
-  else body = active.map(flatCard).join('');
+  else body = groups.map((g) => `
+      <section class="group">
+        <h2 class="group-title">${esc(g.title)} <span class="count">${g.flats.length}</span></h2>
+        <div class="cards">${g.flats.map(flatCard).join('')}</div>
+      </section>`).join('');
   const empty = { active: 'No active flats.', lists: 'No interest lists.', closed: 'No closed flats.' }[state.tab];
 
   app.innerHTML = `
@@ -397,7 +432,9 @@ function renderHome() {
           ${label} <span class="count">${n}</span>
         </a>`).join('')}
     </nav>
-    <div class="cards">${body || `<p class="message">${empty}</p>`}</div>`;
+    ${state.tab === 'active'
+      ? (body || `<p class="message">${empty}</p>`)
+      : `<div class="cards">${body || `<p class="message">${empty}</p>`}</div>`}`;
   app.querySelectorAll('.gallery').forEach((g) => wireGallery(g));
 }
 
