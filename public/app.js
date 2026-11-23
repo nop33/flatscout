@@ -210,6 +210,12 @@ function photoFailed(holder) {
   }
 }
 
+// A card whose photos all failed keeps the thin empty photo strip.
+function galleryGone(g) {
+  if (g.matches('.card-gallery')) g.outerHTML = '<div class="card-photo empty"></div>';
+  else g.remove();
+}
+
 /* ---------- Data ---------- */
 
 async function fetchCSV(url) {
@@ -333,7 +339,8 @@ function renderNextUp() {
 /* ---------- Home ---------- */
 
 function flatCard(f) {
-  const photo = splitLinks(f.photo_links)[0];
+  const photos = splitLinks(f.photo_links);
+  const href = `#/flat/${encodeURIComponent(f.id)}`;
   const rent = rentLines(f);
   const start = parseDT(f.start_date);
   const facts = [
@@ -342,16 +349,16 @@ function flatCard(f) {
     rent.gross && esc(rent.gross),
   ].filter(Boolean);
   return `
-    <a class="card" href="#/flat/${encodeURIComponent(f.id)}">
-      <div class="card-photo${photo ? '' : ' empty'}" data-photo>${photo ? photoImg(photo) : ''}</div>
-      <div class="card-body">
+    <article class="card">
+      ${photos.length ? gallery(photos, href) : '<div class="card-photo empty"></div>'}
+      <a class="card-body" href="${href}">
         <div class="card-top">${badge(FLAT_STATUS, f.status)}${f.area ? `<span class="area">${esc(f.area)}</span>` : ''}</div>
         <h3 class="card-title">${esc(f.address || f.id)}</h3>
         ${facts.length ? `<p class="card-facts">${facts.join('<span class="dot">·</span>')}</p>` : ''}
         ${start ? `<p class="card-meta">From ${esc(fmtDate(start))}</p>` : ''}
         ${isClosed(f) && f.closed_reason ? `<p class="card-meta reason">${esc(f.closed_reason)}</p>` : ''}
-      </div>
-    </a>`;
+      </a>
+    </article>`;
 }
 
 function listCard(l) {
@@ -391,6 +398,7 @@ function renderHome() {
         </a>`).join('')}
     </nav>
     <div class="cards">${body || `<p class="message">${empty}</p>`}</div>`;
+  app.querySelectorAll('.gallery').forEach((g) => wireGallery(g));
 }
 
 /* ---------- Detail ---------- */
@@ -449,12 +457,18 @@ function timeline(f) {
     </li>`).join('')}</ol>`;
 }
 
-function gallery(photos) {
+// Swipeable photo strip. On the detail page a tap enlarges the photo; on a
+// homepage card (href given) a tap opens the flat, and a swipe only changes
+// the photo, since the browser does not fire a click after a scroll gesture.
+function gallery(photos, href) {
   if (!photos.length) return '';
+  const slide = href
+    ? (p, i) => `<a class="slide" href="${href}" tabindex="-1" draggable="false" data-photo aria-label="Photo ${i + 1}, open flat">${photoImg(p)}</a>`
+    : (p, i) => `<button type="button" class="slide" data-photo data-src="${esc(p)}" aria-label="Enlarge photo ${i + 1}">${photoImg(p)}</button>`;
   return `
-    <div class="gallery" data-index="0">
+    <div class="gallery${href ? ' card-gallery' : ''}" data-index="0">
       <div class="slides">
-        ${photos.map((p, i) => `<button type="button" class="slide" data-photo data-src="${esc(p)}" aria-label="Enlarge photo ${i + 1}">${photoImg(p)}</button>`).join('')}
+        ${photos.map(slide).join('')}
       </div>
       <button type="button" class="gnav prev" aria-label="Previous photo">‹</button>
       <button type="button" class="gnav next" aria-label="Next photo">›</button>
@@ -464,21 +478,21 @@ function gallery(photos) {
 
 function updateGallery(g) {
   const slides = g.querySelectorAll('.slide');
-  if (!slides.length) { g.remove(); return; }
+  if (!slides.length) { galleryGone(g); return; }
   const track = g.querySelector('.slides');
   const idx = Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
   g.querySelector('.gcount').textContent = slides.length > 1 ? `${Math.min(idx + 1, slides.length)} / ${slides.length}` : '';
   g.querySelectorAll('.gnav').forEach((b) => { b.hidden = slides.length < 2; });
 }
 
-function wireGallery() {
-  const g = app.querySelector('.gallery');
+function wireGallery(g = app.querySelector('.gallery')) {
   if (!g) return;
   const track = g.querySelector('.slides');
   const step = (d) => track.scrollBy({ left: d * track.clientWidth, behavior: 'smooth' });
   g.querySelector('.prev').addEventListener('click', () => step(-1));
   g.querySelector('.next').addEventListener('click', () => step(1));
   track.addEventListener('scroll', () => updateGallery(g), { passive: true });
+  if (g.matches('.card-gallery')) { updateGallery(g); return; }
   track.addEventListener('click', (e) => {
     const slide = e.target.closest('.slide');
     if (!slide) return;
