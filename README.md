@@ -36,8 +36,13 @@ These steps are not automated. Nothing here creates the Google Sheet, the Drive 
 
 The site is an installable web app (`manifest.webmanifest`, icons in `public/icons/`, service worker `sw.js`).
 
-- **iPhone (Safari):** Share > *Add to Home Screen*.
-- **Android (Chrome):** menu > *Add to Home screen* / *Install app*.
+Tap **Install app** in the top bar (`public/install.js`):
+
+- **Android (Chrome, Edge, Samsung Internet):** opens the browser's own install prompt. The button shows only once the browser offers it.
+- **iPhone / iPad:** iOS has no install prompt, so the button shows the steps (Share > *Add to Home Screen* > *Add*).
+- The button is hidden when the site is already opened from the home screen.
+
+Without the button: on iPhone use Share > *Add to Home Screen*; on Android use the browser menu > *Install app*.
 
 It opens full screen with its own icon. The service worker keeps:
 

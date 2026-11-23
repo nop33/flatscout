@@ -9,10 +9,10 @@
 // If a cached photo turns out to be broken, app.js deletes it from the cache.
 //
 // Sheet data (api/…) and fixtures are never cached: they always come live.
-const SHELL_CACHE = 'flats-shell-v1';
+const SHELL_CACHE = 'flats-shell-v2';
 const PHOTO_CACHE = 'flats-photos-v1';
 const PHOTO_LIMIT = 300;
-const SHELL = ['./', 'styles.css', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/apple-touch-icon.png'];
+const SHELL = ['./', 'styles.css', 'app.js', 'install.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(SHELL_CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
