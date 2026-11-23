@@ -68,7 +68,7 @@ id,status,closed_reason,address,area,map_link,rooms,m2,gross_rent,net_rent,neben
 ```
 
 - `status`: `requested viewing`, `viewing booked`, `viewed`, `applied`, `interest list`, `closed`.
-- On the homepage, active flats are grouped by status (in the order above). Each card shows a date next to the status badge, and each group is sorted by it:
+- On the homepage, active flats are grouped by status (viewing booked first, then requested viewing, viewed, applied, interest list). Each card shows a date next to the status badge, and each group is sorted by it:
   - `requested viewing`: `date_contacted`, newest first.
   - `viewing booked`: `viewing_datetime`, soonest first.
   - `viewed`: `viewing_datetime`, newest first.
